@@ -87,7 +87,7 @@ cat > distconfig.json <<EOF
     "Bucket": "cloudfront-logs-danstutzman.s3.amazonaws.com",
     "Prefix": ""
   },
-  "DefaultRootObject": "",
+  "DefaultRootObject": "index.html",
   "WebACLId": "",
   "CacheBehaviors": {
     "Quantity": 0,
