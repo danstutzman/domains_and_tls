@@ -1,0 +1,3 @@
+[submodule "tls/letsencrypt.sh"]
+	path = tls/letsencrypt.sh
+	url = https://github.com/lukas2511/letsencrypt.sh.git
