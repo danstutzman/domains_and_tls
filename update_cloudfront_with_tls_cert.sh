@@ -10,30 +10,14 @@ if [ "$2" == "" ]; then
 fi
 NON_HTTPS_DOMAIN=$2
 
-# Set to true to renew certificate
-if true; then
-  sudo gem install aws-sdk
-  pushd tls/letsencrypt.sh
-  AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/.aws/config | awk '{print $3}'`
-  AWS_SECRET_ACCESS_KEY=`grep aws_secret_access_key ~/.aws/config | awk '{print $3}'`
-  AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-    AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-    ./letsencrypt.sh \
-    --config ../letsencrypt_sh_config.sh \
-    --cron --hook ../letsencrypt_sh_route53_hook.rb \
-    --challenge dns-01 --domain $DOMAIN
-  pushd
-
-  #aws iam delete-server-certificate --server-certificate-name $DOMAIN || true
-  TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
-  aws iam upload-server-certificate \
-    --server-certificate-name $DOMAIN-$TIMESTAMP \
-    --certificate-body file://tls/certs/$DOMAIN/cert.pem \
-    --private-key file://tls/certs/$DOMAIN/privkey.pem \
-    --certificate-chain file://tls/certs/$DOMAIN/chain.pem \
-    --path /cloudfront/ \
-    | tee upload-server-certificate.json
-fi
+TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
+aws iam upload-server-certificate \
+  --server-certificate-name $DOMAIN-$TIMESTAMP \
+  --certificate-body file://tls/certs/$DOMAIN/cert.pem \
+  --private-key file://tls/certs/$DOMAIN/privkey.pem \
+  --certificate-chain file://tls/certs/$DOMAIN/chain.pem \
+  --path /cloudfront/ \
+  | tee upload-server-certificate.json
 SERVER_CERTIFICATE_ID=`cat upload-server-certificate.json | python -c "import json,sys; response = json.load(sys.stdin); print response['ServerCertificateMetadata']['ServerCertificateId']"`
 
 aws configure set preview.cloudfront true
