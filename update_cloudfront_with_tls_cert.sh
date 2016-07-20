@@ -19,6 +19,7 @@ aws iam upload-server-certificate \
   --path /cloudfront/ \
   | tee upload-server-certificate.json
 SERVER_CERTIFICATE_ID=`cat upload-server-certificate.json | python -c "import json,sys; response = json.load(sys.stdin); print response['ServerCertificateMetadata']['ServerCertificateId']"`
+rm upload-server-certificate.json
 
 aws configure set preview.cloudfront true
 
