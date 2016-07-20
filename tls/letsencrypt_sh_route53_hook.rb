@@ -17,8 +17,11 @@ Aws.config.update({
 def setup_dns(domain, txt_challenge)
   top_level_domain = domain.split('.')[-2..-1].join('.')
   route53 = Aws::Route53::Client.new()
-  hosted_zone = route53.list_hosted_zones_by_name(
-      {dns_name: "#{top_level_domain}."}).hosted_zones[0]
+  hosted_zones = route53.list_hosted_zones_by_name({dns_name: "#{top_level_domain}."})
+  hosted_zone = hosted_zones.hosted_zones.find { |zone|
+    zone.name == "#{top_level_domain}."
+  }
+  raise "Couldn't find hosted zone with name #{top_level_domain}." if hosted_zone.nil?
   changes = []
   changes << {
     action: "UPSERT",
@@ -46,8 +49,11 @@ end
 def delete_dns(domain, txt_challenge)
   top_level_domain = domain.split('.')[-2..-1].join('.')
   route53 = Aws::Route53::Client.new()
-  hosted_zone = route53.list_hosted_zones_by_name(
-      {dns_name: "#{top_level_domain}."}).hosted_zones[0]
+  hosted_zones = route53.list_hosted_zones_by_name({dns_name: "#{top_level_domain}."})
+  hosted_zone = hosted_zones.hosted_zones.find { |zone|
+    zone.name == "#{top_level_domain}."
+  }
+  raise "Couldn't find hosted zone with name #{top_level_domain}." if hosted_zone.nil?
   changes = []
   changes << {
     action: "DELETE",
