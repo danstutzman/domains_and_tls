@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 if [ "$1" == "" ]; then
   echo 1>&2 "First argument should be domain (e.g. basicruby.com)"
   exit 1
