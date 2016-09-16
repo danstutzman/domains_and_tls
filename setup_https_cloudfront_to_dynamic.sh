@@ -1,14 +1,13 @@
 #!/bin/bash -ex
 if [ "$1" == "" ]; then
-  echo 1>&2 "First arg should be apex domain (e.g. basicruby.com)"
+  echo 1>&2 "1st arg: apex domain (e.g. basicruby.com)"
+  echo 1>&2 "2nd arg: backend domain (e.g. digitalocean.basicruby.com)"
+  echo 1>&2 "3rd arg: piwik domain (e.g. piwik.basicruby.com)"
   exit 1
 fi
 DOMAIN=$1
-if [ "$2" == "" ]; then
-  echo 1>&2 "Second arg should be non-HTTPS domain (e.g. digitalocean.basicruby.com)"
-  exit 1
-fi
-NON_HTTPS_DOMAIN=$2
+BACKEND_DOMAIN=$2
+PIWIK_DOMAIN=$3
 
 TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
 aws iam upload-server-certificate \
@@ -27,11 +26,11 @@ cat > distconfig.json <<EOF
 {
   "CallerReference": "$DOMAIN",
   "Origins": {
-    "Quantity": 1,
+    "Quantity": 2,
     "Items": [
       {
-        "Id": "Custom-$NON_HTTPS_DOMAIN",
-        "DomainName": "$NON_HTTPS_DOMAIN",
+        "Id": "Custom-$BACKEND_DOMAIN",
+        "DomainName": "$BACKEND_DOMAIN",
         "CustomOriginConfig": {
           "HTTPPort": 80,
           "HTTPSPort": 443,
@@ -46,11 +45,32 @@ cat > distconfig.json <<EOF
           "Items": []
         },
         "OriginPath": ""
+      },
+      {
+        "OriginPath": "",
+        "CustomOriginConfig": {
+          "OriginProtocolPolicy": "http-only",
+          "HTTPPort": 80,
+          "OriginSslProtocols": {
+            "Items": [
+              "TLSv1",
+              "TLSv1.1",
+              "TLSv1.2"
+            ],
+            "Quantity": 3
+          },
+          "HTTPSPort": 443
+        },
+        "CustomHeaders": {
+          "Quantity": 0
+        },
+        "Id": "Custom-$PIWIK_DOMAIN",
+        "DomainName": "$PIWIK_DOMAIN"
       }
     ]
   },
   "DefaultCacheBehavior": {
-    "TargetOriginId": "Custom-$NON_HTTPS_DOMAIN",
+    "TargetOriginId": "Custom-$BACKEND_DOMAIN",
     "ForwardedValues": {
       "QueryString": true,
       "Cookies": {
@@ -97,8 +117,41 @@ cat > distconfig.json <<EOF
   "DefaultRootObject": "",
   "WebACLId": "",
   "CacheBehaviors": {
-    "Quantity": 0,
-    "Items": []
+    "Quantity": 1,
+    "Items": [
+      {
+        "TargetOriginId": "Custom-$PIWIK_DOMAIN",
+        "ForwardedValues": {
+          "QueryString": true,
+          "Cookies": {
+            "Forward": "all"
+          },
+          "Headers": {
+            "Quantity": 0,
+            "Items": []
+          }
+        },
+        "ViewerProtocolPolicy": "allow-all",
+        "MinTTL": 0,
+        "TrustedSigners": {
+          "Enabled": false,
+          "Quantity": 0
+        },
+        "SmoothStreaming": false,
+        "DefaultTTL": 0,
+        "MaxTTL": 31536000,
+        "PathPattern": "/piwik*",
+        "Compress": false,
+        "AllowedMethods": {
+          "Quantity": 7,
+          "Items": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"],
+          "CachedMethods": {
+            "Quantity": 2,
+            "Items": ["GET", "HEAD"]
+          }
+        }
+      }
+    ]
   },
   "CustomErrorResponses": {
     "Quantity": 0,
