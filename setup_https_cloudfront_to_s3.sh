@@ -54,7 +54,7 @@ cat > distconfig.json <<EOF
         "Items": []
       }
     },
-    "ViewerProtocolPolicy": "allow-all",
+    "ViewerProtocolPolicy": "redirect-to-https",
     "MinTTL": 0,
     "TrustedSigners": {
       "Enabled": false,
