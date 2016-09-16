@@ -1,4 +1,6 @@
 #!/bin/bash -ex
+cd `dirname $0`
+
 if [ "$1" == "" ]; then
   echo 1>&2 "First arg should be domain (e.g. monitoring.danstutzman.com)"
   exit 1
