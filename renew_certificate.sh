@@ -7,10 +7,12 @@ if [ "$1" == "" ]; then
 fi
 DOMAIN=$1
 
-ruby -raws-sdk -eputs || sudo gem install aws-sdk
+AWS_ACCESS_KEY_ID=`python -c "import json; print json.load(open('ssl_autorenewer.accesskey.json'))['AccessKey']['AccessKeyId']"`
+AWS_SECRET_ACCESS_KEY=`python -c "import json; print json.load(open('ssl_autorenewer.accesskey.json'))['AccessKey']['SecretAccessKey']"`
+
+bundle exec ruby -e"require 'aws-sdk'" || bundle install --path vendor/bundle
 pushd tls/letsencrypt.sh
-AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/.aws/config | awk '{print $3}'`
-AWS_SECRET_ACCESS_KEY=`grep aws_secret_access_key ~/.aws/config | awk '{print $3}'`
+
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
   ./letsencrypt.sh \

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+require 'bundler'
+Bundler.setup
 
 require 'aws-sdk'
 #require 'pry'
@@ -80,10 +82,6 @@ if __FILE__ == $0
   hook_stage = ARGV[0]
   domain = ARGV[1]
   txt_challenge = ARGV[3]
-
-  puts hook_stage
-  puts domain
-  puts txt_challenge
 
   if hook_stage == "deploy_challenge"
     setup_dns(domain, txt_challenge)
