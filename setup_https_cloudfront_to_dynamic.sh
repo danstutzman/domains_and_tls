@@ -112,7 +112,7 @@ cat > distconfig.json <<EOF
     "Enabled": true,
     "IncludeCookies": false,
     "Bucket": "cloudfront-logs-danstutzman.s3.amazonaws.com",
-    "Prefix": ""
+    "Prefix": "$DOMAIN/"
   },
   "DefaultRootObject": "",
   "WebACLId": "",
