@@ -1,7 +1,5 @@
 /private_key.json
 /private_key.pem
-/ssl_autorenewer.accesskey.json
-/ssl_autorenewer.user.json
 /tls/accounts
 /tls/certs
 /vendor

@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 cd `dirname $0`
 
 if [ "$1" == "" ]; then
@@ -7,8 +7,8 @@ if [ "$1" == "" ]; then
 fi
 DOMAIN=$1
 
-AWS_ACCESS_KEY_ID=`python -c "import json; print json.load(open('ssl_autorenewer.accesskey.json'))['AccessKey']['AccessKeyId']"`
-AWS_SECRET_ACCESS_KEY=`python -c "import json; print json.load(open('ssl_autorenewer.accesskey.json'))['AccessKey']['SecretAccessKey']"`
+AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/.aws/config | awk '{print $3}'`
+AWS_SECRET_ACCESS_KEY=`grep aws_secret_access_key ~/.aws/config | awk '{print $3}'`
 
 bundle exec ruby -e"require 'aws-sdk'" || bundle install --path vendor/bundle
 pushd tls/letsencrypt.sh
