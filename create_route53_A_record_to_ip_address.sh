@@ -52,3 +52,5 @@ aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch
 rm new_record_set.json
 
 aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID
+
+ssh-keygen -R $SUBDOMAIN
