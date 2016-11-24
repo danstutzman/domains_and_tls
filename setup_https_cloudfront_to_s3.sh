@@ -61,7 +61,7 @@ cat > distconfig.json <<EOF
       "Quantity": 0
     },
     "SmoothStreaming": false,
-    "DefaultTTL": 0,
+    "DefaultTTL": 3600,
     "MaxTTL": 31536000,
     "Compress": true,
     "AllowedMethods": {
