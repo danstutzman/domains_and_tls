@@ -1,13 +1,15 @@
 #!/bin/bash -ex
-if [ "$1" == "" ]; then
-  echo 1>&2 "1st arg: apex domain (e.g. basicruby.com)"
+if [ "$4" == "" ]; then
+  echo 1>&2 "1st arg: SSL domain (e.g. basicruby.com)"
   echo 1>&2 "2nd arg: backend domain (e.g. digitalocean.basicruby.com)"
   echo 1>&2 "3rd arg: piwik domain (e.g. piwik.basicruby.com)"
+  echo 1>&2 "4th arg: HTTP port on backend (e.g. 80)"
   exit 1
 fi
 DOMAIN=$1
 BACKEND_DOMAIN=$2
 PIWIK_DOMAIN=$3
+HTTP_PORT=$4
 
 TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
 aws iam upload-server-certificate \
@@ -29,10 +31,10 @@ cat > distconfig.json <<EOF
     "Quantity": 2,
     "Items": [
       {
-        "Id": "Custom-$BACKEND_DOMAIN",
+        "Id": "Custom1-$BACKEND_DOMAIN",
         "DomainName": "$BACKEND_DOMAIN",
         "CustomOriginConfig": {
-          "HTTPPort": 80,
+          "HTTPPort": $HTTP_PORT,
           "HTTPSPort": 443,
           "OriginProtocolPolicy": "http-only",
           "OriginSslProtocols": {
@@ -50,7 +52,7 @@ cat > distconfig.json <<EOF
         "OriginPath": "",
         "CustomOriginConfig": {
           "OriginProtocolPolicy": "http-only",
-          "HTTPPort": 80,
+          "HTTPPort": $HTTP_PORT,
           "OriginSslProtocols": {
             "Items": [
               "TLSv1",
@@ -64,13 +66,13 @@ cat > distconfig.json <<EOF
         "CustomHeaders": {
           "Quantity": 0
         },
-        "Id": "Custom-$PIWIK_DOMAIN",
+        "Id": "Custom2-$PIWIK_DOMAIN",
         "DomainName": "$PIWIK_DOMAIN"
       }
     ]
   },
   "DefaultCacheBehavior": {
-    "TargetOriginId": "Custom-$BACKEND_DOMAIN",
+    "TargetOriginId": "Custom1-$BACKEND_DOMAIN",
     "ForwardedValues": {
       "QueryString": true,
       "Cookies": {
@@ -120,7 +122,7 @@ cat > distconfig.json <<EOF
     "Quantity": 1,
     "Items": [
       {
-        "TargetOriginId": "Custom-$PIWIK_DOMAIN",
+        "TargetOriginId": "Custom2-$PIWIK_DOMAIN",
         "ForwardedValues": {
           "QueryString": true,
           "Cookies": {
