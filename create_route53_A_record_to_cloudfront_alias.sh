@@ -1,11 +1,13 @@
 #!/bin/bash -ex
-if [ "$1" == "" ]; then
-  echo 1>&2 "First argument should be domain (e.g. basicruby.com)"
+if [ "$2" == "" ]; then
+  echo 1>&2 "First argument should be apex domain (e.g. basicruby.com)"
+  echo 1>&2 "Second argument should be full domain (e.g. cloudfront.basicruby.com)"
   exit 1
 fi
-DOMAIN=$1
+APEX_DOMAIN=$1
+FULL_DOMAIN=$2
 
-CREATE_ZONE_OUTPUT=`aws route53 create-hosted-zone --name $DOMAIN --caller-reference $DOMAIN 2>&1 || true`
+CREATE_ZONE_OUTPUT=`aws route53 create-hosted-zone --name $APEX_DOMAIN --caller-reference $APEX_DOMAIN 2>&1 || true`
 if [[ "$CREATE_ZONE_OUTPUT" != *HostedZoneAlreadyExists* ]]; then
   echo "$CREATE_ZONE_OUTPUT" 1>&2
   exit 1
@@ -15,16 +17,16 @@ ZONE_ID=`aws route53 list-hosted-zones | python -c "
 import json, sys
 j=json.load(sys.stdin)
 for zone in j['HostedZones']:
-  if zone['Name'] == '$DOMAIN.':
+  if zone['Name'] == '$APEX_DOMAIN.':
     print zone['Id']
 "`
 if [ "$ZONE_ID" == "" ]; then
-  echo 1>&2 "Can't find $DOMAIN. in 'aws route53 list-hosted-zones'"
+  echo 1>&2 "Can't find $APEX_DOMAIN. in 'aws route53 list-hosted-zones'"
   exit 1
 fi
 
 HOSTED_ZONE_ID_FOR_ALL_CLOUDFRONT=Z2FDTNDATAQYW2
-DOMAIN_NAME=`aws cloudfront list-distributions | python -c "import json,sys; distributions = json.load(sys.stdin); print '\n'.join([distribution['DomainName'] for distribution in distributions['DistributionList']['Items'] if distribution['Comment'] == '$DOMAIN'])"`
+CLOUDFRONT_DOMAIN=`aws cloudfront list-distributions | python -c "import json,sys; distributions = json.load(sys.stdin); print '\n'.join([distribution['DomainName'] for distribution in distributions['DistributionList']['Items'] if distribution['Comment'] == '$APEX_DOMAIN'])"` # e.g. dokj9gcs473qm.cloudfront.net
 
 tee new_record_set.json <<EOF
 {
@@ -33,10 +35,10 @@ tee new_record_set.json <<EOF
     {
       "Action": "UPSERT",
       "ResourceRecordSet": {
-        "Name": "$DOMAIN.",
+        "Name": "$FULL_DOMAIN.",
         "Type": "A",
         "AliasTarget": {
-          "DNSName": "$DOMAIN_NAME",
+          "DNSName": "$CLOUDFRONT_DOMAIN",
           "HostedZoneId": "$HOSTED_ZONE_ID_FOR_ALL_CLOUDFRONT",
           "EvaluateTargetHealth": false
         }
