@@ -23,6 +23,7 @@ aws iam upload-server-certificate \
 SERVER_CERTIFICATE_ID=`cat upload-server-certificate.json | python -c "import json,sys; response = json.load(sys.stdin); print response['ServerCertificateMetadata']['ServerCertificateId']"`
 rm upload-server-certificate.json
 
+ruby check-awscli-is-1-11-36.rb
 aws configure set preview.cloudfront true
 
 cat > distconfig.json <<EOF
@@ -76,6 +77,9 @@ cat > distconfig.json <<EOF
     "TargetOriginId": "Custom1-$BACKEND_DOMAIN",
     "ForwardedValues": {
       "QueryString": true,
+      "QueryStringCacheKeys": {
+        "Quantity": 0
+      },
       "Cookies": {
         "Forward": "all"
       },
@@ -101,6 +105,9 @@ cat > distconfig.json <<EOF
         "Quantity": 2,
         "Items": ["GET", "HEAD"]
       }
+    },
+    "LambdaFunctionAssociations": {
+      "Quantity": 0
     }
   },
   "Comment": "$DOMAIN",
@@ -126,6 +133,9 @@ cat > distconfig.json <<EOF
         "TargetOriginId": "Custom2-$PIWIK_DOMAIN",
         "ForwardedValues": {
           "QueryString": true,
+          "QueryStringCacheKeys": {
+            "Quantity": 0
+          },
           "Cookies": {
             "Forward": "all"
           },
@@ -152,6 +162,9 @@ cat > distconfig.json <<EOF
             "Quantity": 2,
             "Items": ["GET", "HEAD"]
           }
+        },
+        "LambdaFunctionAssociations": {
+          "Quantity": 0
         }
       }
     ]
@@ -174,7 +187,8 @@ cat > distconfig.json <<EOF
       "Quantity": 0,
       "Items": []
     }
-  }
+  },
+  "HttpVersion": "http2"
 }
 EOF
 
