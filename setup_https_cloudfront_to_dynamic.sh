@@ -11,6 +11,7 @@ BACKEND_DOMAIN=$2
 PIWIK_DOMAIN=$3
 HTTP_PORT=$4
 
+./delete_unused_certs.sh
 TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
 aws iam upload-server-certificate \
   --server-certificate-name $DOMAIN-$TIMESTAMP \

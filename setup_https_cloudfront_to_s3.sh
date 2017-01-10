@@ -10,6 +10,7 @@ if [ "$2" == "" ]; then
 fi
 BUCKET_NAME=$2
 
+./delete_unused_certs.sh
 TIMESTAMP=`date -u +%Y-%m-%d-%H-%M-%S`
 aws iam upload-server-certificate \
   --server-certificate-name $DOMAIN-$TIMESTAMP \
